@@ -128,7 +128,7 @@ First of all note that this function takes the same set of parameters that `__se
 #define __always_inline inline __attribute__((always_inline))
 ```
 
-which means that this function will be always inlined to reduce size of the Linux kernel image. Now let's try to understand implementation of the `set_bit` function. First of all we check a given number of bit at the beginning of the `set_bit` function. The `IS_IMMEDIATE` macro defined in the same [header](https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/include/asm/bitops.h) file and expands to the call of the builtin [gcc](https://en.wikipedia.org/wiki/GNU_Compiler_Collection) function:
+which means that this function will be always inlined to avoid push and pop instructions. This saves couple cycles but could make the kernel image bigger. It is a trade-off between size and performance. Now let's try to understand implementation of the `set_bit` function. First of all we check a given number of bit at the beginning of the `set_bit` function. The `IS_IMMEDIATE` macro defined in the same [header](https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/include/asm/bitops.h) file and expands to the call of the builtin [gcc](https://en.wikipedia.org/wiki/GNU_Compiler_Collection) function:
 
 ```C
 #define IS_IMMEDIATE(nr)		(__builtin_constant_p(nr))
@@ -317,7 +317,7 @@ The next [header](https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2
 * `bitmap_zero`;
 * `bitmap_fill`.
 
-To clear a bit array and fill it with `1`. Let's look on the implementation of the `bitmap_zero` function:
+To clear a bit array by zeroing all bytes. Let's look on the implementation of the `bitmap_zero` function:
 
 ```C
 static inline void bitmap_zero(unsigned long *dst, unsigned int nbits)
